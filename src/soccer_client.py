@@ -77,6 +77,7 @@ class Competition(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
 
     competition_id: int = Field(alias="id")
+    region_name: str
     name: str
     code: str
     type: str
@@ -172,7 +173,10 @@ class FootballDataClient:
             params["plan"] = plan
 
         data = await self._make_request("/competitions", params=params)
-        return [Competition(**comp) for comp in data.get("competitions", [])]
+        comp_dicts = []
+        for comp in data.get("competitions", []):
+            comp_dicts.append({**comp, "region_name": comp["area"]["name"]})
+        return [Competition(**comp) for comp in comp_dicts]
 
     async def get_competition(
         self,
@@ -195,7 +199,8 @@ class FootballDataClient:
         data = await self._make_request(
             f"/competitions/{competition_id or competition_code}"
         )
-        return Competition(**data)
+        comp_dict = {**data, "region_name": data["area"]["name"]}
+        return Competition(**comp_dict)
 
     # Team endpoints
     async def get_teams(
