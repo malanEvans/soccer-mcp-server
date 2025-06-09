@@ -10,52 +10,78 @@ from datetime import date, datetime
 from typing import Any, Dict, List, Optional
 
 import aiohttp
-from pydantic import BaseModel
+from attr import field
+from pydantic import BaseModel, ConfigDict, Field
 
 from src.server_config import ServerConfig
-
-
-class Match(BaseModel):
-    """Represents a football match."""
-
-    id: int
-    competition: Dict[str, Any]
-    season: Dict[str, Any]
-    utc_date: datetime
-    status: str
-    matchday: Optional[int] = None
-    stage: Optional[str] = None
-    group: Optional[str] = None
-    home_team: Dict[str, Any]
-    away_team: Dict[str, Any]
-    score: Dict[str, Any]
 
 
 class Team(BaseModel):
     """Represents a football team."""
 
-    id: int
+    model_config = ConfigDict(populate_by_name=True)
+
+    team_id: int = Field(alias="id")
     name: str
-    short_name: str
+    short_name: str = Field(alias="shortName")
     tla: str
     crest: str
     address: Optional[str] = None
     website: Optional[str] = None
     founded: Optional[int] = None
-    club_colors: Optional[str] = None
+    club_colors: Optional[str] = Field(None, alias="clubColors")
     venue: Optional[str] = None
+
+
+class Score(BaseModel):
+    home: int
+    away: int
+
+
+class ScoreDetails(BaseModel):
+    winner: Optional[str] = None
+    duration: Optional[str] = None
+    full_time: Optional[Score] = field(default=None, alias="fullTime")
+    half_time: Optional[Score] = field(default=None, alias="halfTime")
+
+
+class Season(BaseModel):
+    season_id: int = Field(alias="id")
+    start_date: datetime = Field(alias="startDate")
+    end_date: datetime = Field(alias="endDate")
+    current_match_date: Optional[int] = Field(None, alias="currentMatchday")
+    winner: Optional[Team] = None
+
+
+class Match(BaseModel):
+    """Represents a football match."""
+
+    model_config = ConfigDict(populate_by_name=True)
+
+    match_id: int = Field(alias="id")
+    competition: Dict[str, Any]
+    season: Season
+    utc_date: datetime = Field(alias="utcDate")
+    status: str
+    matchday: Optional[int] = None
+    stage: Optional[str] = None
+    group: Optional[str] = None
+    home_team: Team = Field(alias="homeTeam")
+    away_team: Team = Field(alias="awayTeam")
+    score: ScoreDetails
 
 
 class Competition(BaseModel):
     """Represents a football competition."""
 
-    id: int
+    model_config = ConfigDict(populate_by_name=True)
+
+    competition_id: int = Field(alias="id")
     name: str
     code: str
     type: str
-    emblem: str
-    current_season: Dict[str, Any]
-    seasons: List[Dict[str, Any]]
+    current_season: Season = Field(alias="currentSeason")
+    seasons: List[Season] = []
 
 
 class FootballDataClient:
@@ -148,16 +174,27 @@ class FootballDataClient:
         data = await self._make_request("/competitions", params=params)
         return [Competition(**comp) for comp in data.get("competitions", [])]
 
-    async def get_competition(self, competition_id: int) -> Competition:
+    async def get_competition(
+        self,
+        competition_id: Optional[int] = None,
+        competition_code: Optional[str] = None,
+    ) -> Competition:
         """Get a specific competition by ID.
 
         Args:
             competition_id: The ID of the competition
+            competition_code: The code of the competition
 
         Returns:
             Competition object
         """
-        data = await self._make_request(f"/competitions/{competition_id}")
+        if not (bool(competition_id) or bool(competition_code)):
+            raise ValueError(
+                "Either competition id or competiton code should be provided"
+            )
+        data = await self._make_request(
+            f"/competitions/{competition_id or competition_code}"
+        )
         return Competition(**data)
 
     # Team endpoints
@@ -254,92 +291,93 @@ class FootballDataClient:
         data = await self._make_request(endpoint, params=params)
         return [Match(**match) for match in data.get("matches", [])]
 
-    async def get_match(self, match_id: int) -> Match:
-        """Get a specific match by ID.
+    # async def get_match(self, match_id: int) -> Match:
+    #     """Get a specific match by ID.
 
-        Args:
-            match_id: The ID of the match
+    #     Args:
+    #         match_id: The ID of the match
 
-        Returns:
-            Match object
-        """
-        data = await self._make_request(f"/matches/{match_id}")
-        return Match(**data)
+    #     Returns:
+    #         Match object
+    #     """
+    #     data = await self._make_request(f"/matches/{match_id}")
+    #     return Match(**data)
 
-    # Area endpoints
-    async def get_areas(self) -> List[Dict[str, Any]]:
-        """Get all available areas.
+    # # Area endpoints
+    # async def get_areas(self) -> List[Dict[str, Any]]:
+    #     """Get all available areas.
 
-        Returns:
-            List of area dictionaries
-        """
-        data = await self._make_request("/areas")
-        return data.get("areas", [])
+    #     Returns:
+    #         List of area dictionaries
+    #     """
+    #     data = await self._make_request("/areas")
+    #     return data.get("areas", [])
 
-    async def get_area(self, area_id: int) -> Dict[str, Any]:
-        """Get a specific area by ID.
+    # async def get_area(self, area_id: int) -> Dict[str, Any]:
+    #     """Get a specific area by ID.
 
-        Args:
-            area_id: The ID of the area
+    #     Args:
+    #         area_id: The ID of the area
 
-        Returns:
-            Area dictionary
-        """
-        return await self._make_request(f"/areas/{area_id}")
+    #     Returns:
+    #         Area dictionary
+    #     """
+    #     return await self._make_request(f"/areas/{area_id}")
 
-    # Player endpoints
-    async def get_player(self, player_id: int) -> Dict[str, Any]:
-        """Get a specific player by ID.
+    # # Player endpoints
+    # async def get_player(self, player_id: int) -> Dict[str, Any]:
+    #     """Get a specific player by ID.
 
-        Args:
-            player_id: The ID of the player
+    #     Args:
+    #         player_id: The ID of the player
 
-        Returns:
-            Player information
-        """
-        return await self._make_request(f"/persons/{player_id}")
+    #     Returns:
+    #         Player information
+    #     """
+    #     return await self._make_request(f"/persons/{player_id}")
 
-    # Standing endpoints
-    async def get_standings(
-        self,
-        competition_id: int,
-        season: Optional[int] = None,
-        matchday: Optional[int] = None,
-        date: Optional[date] = None,
-    ) -> Dict[str, Any]:
-        """Get standings for a competition.
+    # # Standing endpoints
+    # async def get_standings(
+    #     self,
+    #     competition_id: int,
+    #     season: Optional[int] = None,
+    #     matchday: Optional[int] = None,
+    #     date: Optional[date] = None,
+    # ) -> Dict[str, Any]:
+    #     """Get standings for a competition.
 
-        Args:
-            competition_id: The ID of the competition
-            season: Filter by season year
-            matchday: Filter by matchday
-            date: Filter by date
+    #     Args:
+    #         competition_id: The ID of the competition
+    #         season: Filter by season year
+    #         matchday: Filter by matchday
+    #         date: Filter by date
 
-        Returns:
-            Standings information
-        """
-        params = {}
-        if season:
-            params["season"] = season
-        if matchday is not None:
-            params["matchday"] = matchday
-        if date:
-            params["date"] = date.isoformat()
+    #     Returns:
+    #         Standings information
+    #     """
+    #     params = {}
+    #     if season:
+    #         params["season"] = season
+    #     if matchday is not None:
+    #         params["matchday"] = matchday
+    #     if date:
+    #         params["date"] = date.isoformat()
 
-        return await self._make_request(
-            f"/competitions/{competition_id}/standings", params=params
-        )
+    #     return await self._make_request(
+    #         f"/competitions/{competition_id}/standings", params=params
+    #     )
 
 
 # Example usage
 async def example_usage():
     """Example usage of the FootballDataClient."""
-    async with FootballDataClient() as client:
+    server_config = ServerConfig()
+    async with FootballDataClient(server_config) as client:
         # Get all competitions
-        competitions = await client.get_competitions()
-        print(f"Found {len(competitions)} competitions")
+        # competitions = await client.get_competitions()
+        # print(f"Found {len(competitions)} competitions")
 
-        # Get a specific competition
+        # # Get a specific competition
         pl = await client.get_competition(2021)  # Premier League
         print(f"\nPremier League: {pl.name}")
 
