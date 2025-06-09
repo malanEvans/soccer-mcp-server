@@ -4,6 +4,8 @@ sdk: gradio
 sdk_version: 5.33.0
 app_file: soccer_mcp_server.py
 pinned: true
+emoji: ⚽
+python_version: 3.12
 tags:
 - mcp-server-track
 ---
