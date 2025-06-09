@@ -1,3 +1,13 @@
+---
+title: Soccer MCP Server
+sdk: gradio
+sdk_version: 5.33.0
+app_file: soccer_mcp_server.py
+pinned: true
+tags:
+- mcp-server-track
+---
+
 # Soccer MCP Server
 
 A Python-based server for managing soccer-related data and operations.
@@ -6,7 +16,7 @@ A Python-based server for managing soccer-related data and operations.
 
 ### Prerequisites
 
-- Python 3.8 or higher
+- Python 3.12 or higher
 - [uv](https://github.com/astral-sh/uv) package manager
 
 ### Installation
@@ -28,12 +38,6 @@ A Python-based server for managing soccer-related data and operations.
    uv pip install -e ".[dev]"
    ```
 
-### Usage
-
-Run the server:
-```bash
-soccer-mcp
-```
 
 ## Development
 
