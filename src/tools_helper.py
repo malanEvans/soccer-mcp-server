@@ -4,7 +4,7 @@ Soccer MCP Tools - A collection of utilities for working with football data.
 
 from typing import Any, Dict, List
 
-from llm_utils import invoke_llm
+from src.llm_utils import invoke_llm
 from src.server_config import ServerConfig
 from src.soccer_client import Competition, FootballDataClient
 
