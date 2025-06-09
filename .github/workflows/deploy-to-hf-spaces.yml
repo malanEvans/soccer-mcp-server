@@ -16,17 +16,5 @@ jobs:
       env:
         HF_TOKEN: ${{ secrets.HF_TOKEN }}
       run: |
-        # Get the last commit message
-        COMMIT_MSG=$(git log -1 --pretty=format:"%s")
-        
-        # Initialize and configure git
-        git init
-        git remote add origin https://malanevans:$HF_TOKEN@huggingface.co/spaces/Agents-MCP-Hackathon/soccer-mcp-server
-        
-        # Add and commit with the last commit message
-        git add .
-        git commit -m "$COMMIT_MSG" || git commit -m "Deploy from GitHub Actions"
-        
-        # Push to Hugging Face Space
         git push https://malanevans:$HF_TOKEN@huggingface.co/spaces/Agents-MCP-Hackathon/soccer-mcp-server main
 
