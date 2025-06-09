@@ -31,7 +31,6 @@ class SoccerMCPToolsHelper:
         return {
             comp.name: {
                 "id": comp.competition_id,
-                "code": comp.code,
                 "region_name": comp.region_name,
             }
             for comp in competitions
@@ -64,7 +63,7 @@ class SoccerMCPToolsHelper:
             nebius_api_key=self._server_config.nebius_api_key,
             prompt_id="find-competition-id.j2",
             prompt_args={
-                "competition_name": competition_name,
+                "required_competition": competition_name,
                 "competition_mapping": self._competition_mapping,
             },
         )
@@ -74,10 +73,8 @@ class SoccerMCPToolsHelper:
 
         competitions = []
         async with FootballDataClient(self._server_config) as client:
-            for competition_id_details in competition_id_list:
-                competition_info = await client.get_competition(
-                    competition_id_details["id"]
-                )
+            for competition_id in competition_id_list:
+                competition_info = await client.get_competition(competition_id)
                 competitions.append(competition_info)
 
         return competitions

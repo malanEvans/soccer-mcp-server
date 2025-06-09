@@ -16,7 +16,8 @@ def get_competition_info(competition_name: str) -> str:
     Competition name could be cup name, league name, etc.
 
     Args:
-        competition_name: Name of the competition to look up
+        competition_name: Name of the competition to look up this can include location information
+        (ex: English Premier League, UEFA Champions League)
 
     Returns:
         str: Competition information including name, type, current season, and previous seasons

@@ -1,27 +1,29 @@
-Your will be given a competition name and you need to find the competition id and code for that competition.
-You will be provided with a mapping of competition names to their ids and codes.
+You will be given a competition name and you need to find the competition id for that competition.
+You will be provided with a mapping of competition names to their ids and region names.
 If there are multiple matches, you should return all as a list.
 If there are no matches, you should return an empty list.
 
 ### Competition Mapping
 {{ competition_mapping }}
 
-### Required competition name
-{{ competition_name }}
+### Required competition
+{{ required_competition }}
+
+Understand that required competition name might be different from the name in the competition mapping.
+When looking for a match, use any location identifiers from the required competition to find the matching competition.
+Try to find the best match possible.
 
 ### Output
-A list of competition id and code pairs in following JSON format.
+A list of competition ids in following JSON format.
 
 ```json
-[
-    {
-        "id": <competition_id>,
-        "code": <competition_code>
-    },
-]
+[list of identified competition ids]
 ```
 
 ## Important
 - Do not make assumptions
-- Match only if there's a match in competition mapping for competition name provided
+- Must not make things up. id must be from competition mapping
+- Return empty list if no matches found
+- Do not return any other information
+
 
