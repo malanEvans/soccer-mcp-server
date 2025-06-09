@@ -29,7 +29,11 @@ class SoccerMCPToolsHelper:
         async with FootballDataClient(self._server_config) as client:
             competitions = await client.get_competitions()
         return {
-            comp.name: {"id": comp.competition_id, "code": comp.code}
+            comp.name: {
+                "id": comp.competition_id,
+                "code": comp.code,
+                "region_name": comp.region_name,
+            }
             for comp in competitions
         }
 
