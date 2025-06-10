@@ -59,3 +59,7 @@ uv run isort .
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Test MCP Server
+
+You can test this MCP server using mcp-client chat interface at sister space https://huggingface.co/spaces/malanevans/soccer-mcp-client
